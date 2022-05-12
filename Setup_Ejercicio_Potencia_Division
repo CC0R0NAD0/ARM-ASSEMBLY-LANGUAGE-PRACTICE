@@ -1,0 +1,170 @@
+;		######################################
+;		SETUP EJERCICIO POTENCIAS Y DIVISIONES
+;		######################################
+;		Definicion de Direcciones de Memoria
+MOV		R0, #0x00FF0000
+
+;		Valor de Registros como operandos de las operaciones
+MOV		R1, #7
+MOV		R2, #7
+MOV		R3, #99
+MOV		R4, #3
+MOV		R5, #100
+MOV		R6, #6
+MOV		R7, #7
+MOV		R8, #0
+
+;		#####################
+;		ESPACIO PARA SOLUCION
+;		#####################
+
+B MAIN ;INICIO DEL PROGRAMA PRINCIPAL
+
+;Se declaran las etiquetas correspondiantes a cada llamado para ejecucion
+;---------------------------------------------------------------------
+
+
+MUL_CICLO_DIV ;funcion ciclica permite realizar la multiplicacion sumando el valor por cada llamado
+				ADD		R10, R10, #1 ;se suma el valor hasta alcanzar el resultado
+				ADD		R9, R9, R4 ;se suma el calor al denorminador para hallar el valor
+				SUB		R11, R3, R9 ;se le resta el valor al num
+				B		REGRESO_MULTI_DIV ; se regresa a la variable original
+;Operacion division				
+DIV ;
+				MOV		R9, #0x0
+				MOV		R10, #0x1 ;iniciliza los registros a utilizar
+				MOV		R11, R3
+				MOV		R9, R4  ;se copian los valores para no operar sobre los registros dados
+
+REGRESO_MULTI_DIV
+				CMP		R11, R4 ;se compara el valor con el del numerador
+				BCS		MUL_CICLO_DIV  ;se llama a la funcion si es <=
+				STR		R10, [R0] ; se guarda el valor en la direccion de memoria
+				MOV		PC, LR ; se torna al main
+				
+;---------------------------------------------------------------------------				
+
+
+
+;-------------------------------------------------------------------
+MUL_CICLO ; Se declara ciclo para multiplicar 
+	ADD R10, R10, R5 ; se añade el valor al resultado
+	SUB R9, R9, #1 ; se resta 1 del contador
+	B REGRESO_MULTI
+
+MULTI ;
+	MOV R9, #0x0
+	MOV R10, #0x0
+	MOV R9, R6 ;se inicializan las var y se almacenan en un registro
+REGRESO_MULTI ;
+
+	CMP R9, #0x0 ;se compara el contador para seguir en el ciclo 
+	BNE MUL_CICLO ;
+	STR R10, [R0] ; se guarda el valor en la direccion de memoria
+	MOV PC, LR ; se torna al main
+;-------------------------------------------------------------------	
+
+
+
+
+
+;--------------------------------------------------------------
+OPERANDO_POT
+	ADD R10, R10,R12
+	SUB R9, R9, #1 ; se resta 1 del contador
+	B  REGRESO_MULTI_POT
+
+MULTI_POT_CICLO ;
+
+	REGRESO_MULTI_POT
+	CMP R9, #0x0
+	BNE OPERANDO_POT
+	
+	SUB R11, R11, #1
+	MOV R12, R10
+	MOV R10, #0x0 ;se inicializan las var y se almacenan en un registro
+	B REGRESO_POT
+
+
+POT
+	MOV R9, #0x0
+	MOV R10, #0x0
+
+	MOV R11, #0x0
+	mov R12, R1
+
+	
+	MOV R11, R2
+REGRESO_POT
+	MOV R9, R1
+	CMP R11, #0x1
+	BNE MULTI_POT_CICLO
+	STR R12, [R0]
+
+
+MOV PC, LR ; se torna al main
+;-------------------------------------------------------------------
+
+
+;Funcion identica a la de potencia, con la excepcion de la potencia a cero
+OPERANDO_POT2
+	ADD R10, R10,R12
+	SUB R9, R9, #1
+	B  REGRESO_MULTI_POT2
+
+MULTI_POT_CICLO2 ;
+
+	REGRESO_MULTI_POT2
+	CMP R9, #0x0
+	BNE OPERANDO_POT2
+	
+	SUB R11, R11, #1
+	MOV R12, R10
+	MOV R10, #0x0
+	B REGRESO_POT2
+
+
+POT2
+	CMP R8, #0X0
+	B ELEVADO_ZERO ;execpcion al elevar por cero 
+	MOV R9, #0x0
+	MOV R10, #0x0
+
+	MOV R11, #0x0
+	mov R12, R7
+
+	
+	MOV R11, R8
+REGRESO_POT2
+	MOV R9, R7
+	CMP R11, #0x1
+	BNE MULTI_POT_CICLO2
+	STR R12, [R0]
+
+ELEVADO_ZERO
+	MOV R12, #0X1 ; por defecto se retorna 1
+	STR R12, [R0]
+
+MOV PC, LR ; se torna al main
+;-------------------------------------------------------------------
+
+
+
+	
+	
+
+
+
+
+MAIN ;funcion principal se ejecuta el programa
+
+	;llamado en orden de cada ejecucion necesaria
+	BL DIV
+	BL POT
+	BL DIV
+	BL MULTI
+	BL POT2
+
+	B FIN ; se hace el llamado a una etiqueta de finalizacion
+
+FIN

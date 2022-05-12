@@ -1,0 +1,237 @@
+;		#####################################
+;		SETUP EJERCICIO MAYUSCULAS MINUSCULAS
+;		#####################################
+;		Definicion de Direcciones de Memoria
+MOV		R0, #0x00FF0000
+MOV		R1, #0x00FF0000
+ADD		R1, R1, #0x000000C
+
+;		Creacion y almacenamiento del primer dato
+MOV		R2, #0x7A000000
+ADD		R2, R2, #0x00410000
+ADD		R2, R2, #0x00004400
+;
+;se cambio el 49 original por un 48 para probar
+ADD		R2, R2, #0x00000048
+STR		R2, [R0]
+
+;		Creacion y almacenamiento del segundo dato
+MOV		R2, #0x80000000
+ADD		R2, R2, #0x00730000
+ADD		R2, R2, #0x00006F00
+STR		R2, [R0, #0x4]
+
+;		Creacion y almacenamiento del tercer dato
+MOV		R2, #0x55000000
+ADD		R2, R2, #0x00850000
+ADD		R2, R2, #0x00006000
+ADD		R2, R2, #0x00000069
+STR		R2, [R0, #0x8]
+
+;		Creacion y almacenamiento del cuarto dato
+MOV		R2, #0x71000000
+ADD		R2, R2, #0x00730000
+ADD		R2, R2, #0x00008400
+ADD		R2, R2, #0x00000075
+STR		R2, [R0, #0xC]
+
+;		Reinicio de registros segun necesidades del
+;		ejercicio
+MOV		R2, #0
+
+;		#####################
+;		ESPACIO PARA SOLUCION
+;		#####################
+
+MOV R3, #0 ;INICIALIZA VARIABLE
+MOV R4, #0 ;CONTADOR MAYUSCULAS
+MOV R5, #0  ;CONTADOR MINUSCULAS
+MOV R6, #0  ;CONTADOR ULTIMA POSICION O CANT BYTES 12+4
+ADD R6, R1, #4
+;-------------------------------------------
+
+MOV R3, R0 ;SE CARCA R3 CON LA DIRECCION INICIAL PARA
+;PODER MODIFICARLA
+;-------------------------------------------
+
+
+
+B MAIN ; COMIENZO DEL PROGRAMA
+
+
+;------------------------------FUNCIONES
+
+
+
+
+;-----------------------------------
+;FUNCION PARA CONTAR VOCALES
+MAYUSCULA_EN
+ADD R4,R4, #1
+B RETORNO
+
+MINUSC_EN
+ADD R5,R5, #1
+B RETORNO
+
+
+CONTEO
+LDRB R2, [R3],#1
+; COMPARACION CON MAYUSCULAS
+
+CMP R2, #0x41 ;COMPARA CON A
+BEQ MAYUSCULA_EN
+
+CMP R2, #0x45 ;COMPARA CON E
+BEQ MAYUSCULA_EN
+
+CMP R2, #0x49 ;;COMPARA CON I
+BEQ MAYUSCULA_EN
+
+CMP R2, #0x4F ;COMPARA CON O
+BEQ MAYUSCULA_EN
+
+CMP R2, #0x55 ;COMPARA CON U
+BEQ MAYUSCULA_EN
+
+
+; COMPARACION CON MINUSCULAS
+
+CMP R2, #0x61 ;COMPARA CON a
+BEQ MINUSC_EN
+
+CMP R2, #0x65 ;COMPARA CON e
+BEQ MINUSC_EN
+
+CMP R2, #0x69 ;COMPARA CON i
+BEQ MINUSC_EN
+
+CMP R2, #0x6F ;COMPARA CON o
+BEQ MINUSC_EN
+
+CMP R2, #0x75 ;COMPARA CON u
+BEQ MINUSC_EN
+
+RETORNO
+CMP R3, R6
+BNE CONTEO
+
+MOV PC, LR
+;FIN DE LA FUNCION SE RETORNA AL MAIN----------------
+
+
+
+
+
+
+;------------------------------------------------
+;FUNCION CAMBIAR SI ES <>=
+CAMBIAR
+MOV R2, #0
+MOV R3, R0
+ADD R6, R1, #4
+
+;CASO ES IGUAL
+CMP R4, R5
+MOVEQ PC, LR
+
+;CASO MAS MAYUSCULAS CAMBIAR A MINUSCULAR
+CMP R4, R5
+BCS CAMBIO_A_MINUSC
+
+;CASO MAS MINUSCULAS CAMBIAR A MAYUSCULAS
+CMP R4, R5
+BCC  CAMBIO_A_MAYUSC
+
+
+CAMBIO_A_MINUSC
+	CMP R3, R6
+	BNE RECORRIDO_MINUS
+	MOV PC, LR
+
+
+	RECORRIDO_MINUS
+		MOV R7, #0
+		LDRB R2, [R3],#1
+		; COMPARACION CON MAYUSCULAS
+
+		CMP R2, #0x41 ;COMPARA CON A
+		BEQ CAMB_REG_A_MINUS
+
+		CMP R2, #0x45 ;COMPARA CON E
+		BEQ CAMB_REG_A_MINUS
+
+		CMP R2, #0x49 ;;COMPARA CON I
+		BEQ CAMB_REG_A_MINUS
+
+		CMP R2, #0x4F ;COMPARA CON O
+		BEQ CAMB_REG_A_MINUS
+
+		CMP R2, #0x55 ;COMPARA CON U
+		BEQ CAMB_REG_A_MINUS
+		
+		B CAMBIO_A_MINUS
+
+
+		CAMB__REG_A_MINUS
+			ADD R7, R2, #32
+			STRB R7, [R3, #-1]
+			
+			B CAMBIO_A_MINUSC
+
+
+;---------------------------------------
+
+
+CAMBIO_A_MAYUSC
+		CMP R3, R6
+		BNE RECORRIDO_MAYUS
+		MOV PC, LR
+
+	RECORRIDO_MAYUS
+		MOV R7, #0
+		LDRB R2, [R3],#1
+		; COMPARACION CON MINUSCULAS
+
+		CMP R2, #0x61 ;COMPARA CON a
+		BEQ CAMB_REG_A_MAYUS
+	
+		CMP R2, #0x65 ;COMPARA CON e
+		BEQ CAMB_REG_A_MAYUS
+
+		CMP R2, #0x69 ;COMPARA CON i
+		BEQ CAMB_REG_A_MAYUS
+
+		CMP R2, #0x6F ;COMPARA CON o
+		BEQ CAMB_REG_A_MAYUS
+
+		CMP R2, #0x75 ;COMPARA CON u
+		BEQ CAMB_REG_A_MAYUS
+		
+		
+		B CAMBIO_A_MAYUSC
+
+
+		CAMB_REG_A_MAYUS
+			SUB R7, R2, #32
+			STRB R7, [R3, #-1]
+			B CAMBIO_A_MAYUSC
+
+
+;----------------------------------------
+
+
+
+
+;FUNCION PRINCIPAL------------------------------------
+MAIN
+
+BL RETORNO
+
+
+BL CAMBIAR
+
+
+B FIN
+
+FIN
